@@ -1,31 +1,40 @@
-import streamlit as st
+from flask import Flask, render_template, request
 import requests
+import os
 
-st.set_page_config(page_title="Live News", layout="wide")
+app = Flask(__name__)
 
-NEWS_API_KEY = 'd5fd416f235740d481b92f0402a62101'
+# Set your NewsAPI key here or use environment variable
+API_KEY = 'd5fd416f235740d481b92f0402a62101'  # Replace with your actual API key
 
-st.title("📰 Live News Portal")
+NEWS_API_BASE_URL = "https://newsapi.org/v2/top-headlines"
 
-category = st.selectbox("Choose a category", [
-    'general', 'business', 'technology', 'health', 'sports', 'science', 'entertainment'
-])
+# Homepage route
+@app.route('/', methods=['GET'])
+def index():
+    category = request.args.get('category', 'general')
+    query = request.args.get('query', '')
 
-query = st.text_input("Search keyword (optional):")
+    # Construct query parameters
+    params = {
+        'apiKey': API_KEY,
+        'country': 'us',
+        'category': category
+    }
 
-url = f"https://newsapi.org/v2/top-headlines?country=us&category={category}&apiKey={NEWS_API_KEY}"
-if query:
-    url += f"&q={query}"
+    if query:
+        params['q'] = query
 
-response = requests.get(url)
-articles = response.json().get('articles', [])
+    try:
+        response = requests.get(NEWS_API_BASE_URL, params=params)
+        response.raise_for_status()
+        news_data = response.json()
+        articles = news_data.get('articles', [])
+    except requests.RequestException as e:
+        print(f"Error fetching news: {e}")
+        articles = []
 
-if articles:
-    for article in articles:
-        st.markdown("### " + article.get('title', ''))
-        st.image(article.get('urlToImage', 'https://via.placeholder.com/400x200'), width=600)
-        st.write(article.get('description', 'No description'))
-        st.markdown(f"[Read more]({article.get('url')})", unsafe_allow_html=True)
-        st.markdown("---")
-else:
-    st.warning("No news found. Try a different keyword or category.")
+    return render_template('index.html', articles=articles)
+
+if __name__ == '__main__':
+    app.run(debug=True)
