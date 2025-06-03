@@ -35,5 +35,5 @@ def index():
     return render_template('index.html', articles=articles, category=category, query=query)
 
 # Only run the app if this script is run directly (useful for local dev)
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == "__main__" 
+    app.run(debug=False, use_reloader=False)
