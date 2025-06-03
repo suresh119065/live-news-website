@@ -4,18 +4,16 @@ import os
 
 app = Flask(__name__)
 
-# Set your NewsAPI key here or use environment variable
-API_KEY = 'd5fd416f235740d481b92f0402a62101'  # Replace with your actual API key
+# Use environment variable or replace with your key string
+API_KEY = 'd5fd416f235740d481b92f0402a62101'
 
-NEWS_API_BASE_URL = "https://newsapi.org/v2/top-headlines"
+NEWS_API_URL = "https://newsapi.org/v2/top-headlines"
 
-# Homepage route
 @app.route('/', methods=['GET'])
 def index():
     category = request.args.get('category', 'general')
     query = request.args.get('query', '')
 
-    # Construct query parameters
     params = {
         'apiKey': API_KEY,
         'country': 'us',
@@ -25,16 +23,17 @@ def index():
     if query:
         params['q'] = query
 
+    articles = []
     try:
-        response = requests.get(NEWS_API_BASE_URL, params=params)
+        response = requests.get(NEWS_API_URL, params=params)
         response.raise_for_status()
-        news_data = response.json()
-        articles = news_data.get('articles', [])
+        data = response.json()
+        articles = data.get('articles', [])
     except requests.RequestException as e:
         print(f"Error fetching news: {e}")
-        articles = []
 
-    return render_template('index.html', articles=articles)
+    return render_template('index.html', articles=articles, category=category, query=query)
 
-if __name__ == '__main__':
-    app.run(debug=False, use_reloader=False)
+# Only run the app if this script is run directly (useful for local dev)
+if __name__ == "__main__":
+    app.run(debug=True)
