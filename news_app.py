@@ -3,7 +3,7 @@ import requests
 
 st.set_page_config(page_title="Live News", layout="wide")
 
-NEWS_API_KEY = ''
+NEWS_API_KEY = 'd5fd416f235740d481b92f0402a62101'
 
 st.title("📰 Live News Portal")
 
